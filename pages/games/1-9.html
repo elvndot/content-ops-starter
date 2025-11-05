@@ -1,139 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Are You Faster Than Me?</title>
+  <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spanish Mini Quiz</title>
   <style>
-    body {
+body {
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: none;
       height: 100vh;
-      margin: 0;
-      background: beige;
+      margin: 20px;
+      color: black;
+      background-color: #f9fafb;
     }
     h1 {
-      font-size: 2em;
-      margin-bottom: 20px;
+	margin-top: 150px;
+      margin-bottom: 50px;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 80px);
-      gap: 10px;
-    }
-    button {
-      width: 80px;
-      height: 80px;
-      font-size: 1.5em;
-      font-weight: bold;
+    .question-box {
+      background: #f9faf4;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 80%;
+      max-width: 50%;
+}
+    .options button {
+      display: block;
+      margin: 10px auto;
+      padding: 20px;
+      width: 80%;
       border: none;
-      border-radius: 8px;
+      border-radius: 5px;
+      background-color: #d1d5db;
       cursor: pointer;
-    }
-    .active {
+      font-size: 1em;
+}
+    .options button:hover {
       background-color: #edc685;
-      color: white;
-    }
-    .active:hover{
-	background-color: #eec886;
-	color: black;
-
-	}
-    .inactive {
-      background-color: #fae6c8;
-      color: #6b7280;
     }
     .result {
       margin-top: 20px;
-      text-align: center;
-    }
-    .play-again {
-      margin-top: 10px;
-      padding: 10px 20px;
-      width: 100%;
-      background-color: #10b981;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1em;
-      white-space: nowrap;
+      font-weight: bold;
     }
 
   </style>
 </head>
-
 <body>
+<h1>Spanish Mini Quiz</h1>
+  <div class="question-box">
+    <div id="question" style="font-weight: bold; font-style: italic; padding: 10px;">Loading...</div>
+    <div class="options" id="options"></div>
+    <div class="result" id="result"></div>
+  </div>
+<script>
+    const words = [
+      ["el perro", "the dog"], ["el gato", "the cat"], ["la casa", "the house"], ["el libro", "the book"],
+      ["la silla", "the chair"], ["el coche", "the car"], ["la mesa", "the table"], ["el árbol", "the tree"],
+      ["el niño", "the boy"], ["la niña", "the girl"], ["el zapato", "the shoe"], ["la escuela", "the school"],
+      ["el sol", "the sun"], ["la luna", "the moon"], ["el agua", "the water"], ["el pan", "the bread"],
+      ["el queso", "the cheese"], ["el reloj", "the watch"], ["la ventana", "the window"], ["la puerta", "the door"],
+      ["el amigo", "the friend"], ["la playa", "the beach"], ["el río", "the river"], ["la montaña", "the mountain"],
+      ["la ciudad", "the city"], ["el campo", "the countryside"], ["la calle", "the street"], ["el edificio", "the building"],
+      ["la comida", "the food"], ["la bebida", "the drink"], ["el tren", "the train"], ["el avión", "the airplane"],
+      ["el mar", "the sea"], ["el jardín", "the garden"], ["la flor", "the flower"], ["el pez", "the fish"],
+      ["el pájaro", "the bird"], ["el huevo", "the egg"], ["la leche", "the milk"], ["el teléfono", "the phone"],
+      ["la computadora", "the computer"], ["el papel", "the paper"], ["el lápiz", "the pencil"],
+      ["el bolígrafo", "the pen"], ["el trabajo", "the job"], ["la oficina", "the office"],
+      ["el jefe", "the boss"], ["la camisa", "the shirt"], ["el pantalón", "the pants"],
+      ["la chaqueta", "the jacket"], ["el vestido", "the dress"]
+    ];
 
-
-  <h1>Are You Faster Than Me?</h1>
-	<h2>Lets play!</h2>
-  <div class="grid" id="grid"></div>
-  <div class="result" id="result"></div>
-
-  <script>
-    const grid = document.getElementById("grid");
-    const result = document.getElementById("result");
-    let numbers = [];
-    let current = 1;
-    let startTime = null;
-    let endTime = null;
-
-    function shuffle(arr) {
-      return arr.sort(() => Math.random() - 0.5);
+    while (words.length < 100) {
+      words.push(...words.slice(0, Math.min(100 - words.length, words.length)));
     }
+const allTranslations = [...new Set(words.map(w => w[1]))];
+    const quiz = words.slice(0, 100).map(([spanish, correct]) => {
+      const wrong = allTranslations.filter(w => w !== correct);
+      const options = [...wrong.sort(() => 0.5 - Math.random()).slice(0, 2), correct].sort(() => 0.5 - Math.random());
+      return {
+        question: `What does '${spanish}' mean?`,
+        options,
+        answer: correct
+      };
+    });
 
-    function resetGame() {
-      numbers = shuffle([...Array(9).keys()].map(n => n + 1));
-      current = 1;
-      startTime = null;
-      endTime = null;
-      result.innerHTML = "";
-      renderGrid();
-    }
+    let current = 0;
 
-    function renderGrid() {
-      grid.innerHTML = "";
-      numbers.forEach(num => {
+    function loadQuestion() {
+      const q = quiz[current];
+      document.getElementById("question").textContent = q.question;
+      const optionsBox = document.getElementById("options");
+      optionsBox.innerHTML = "";
+      document.getElementById("result").textContent = "";
+q.options.forEach(option => {
         const btn = document.createElement("button");
-        btn.textContent = num;
-        btn.className = num === current ? "active" : "inactive";
-        btn.disabled = num !== current;
-        btn.onclick = () => handleClick(num);
-        grid.appendChild(btn);
+        btn.textContent = option;
+        btn.onclick = () => handleAnswer(option);
+        optionsBox.appendChild(btn);
       });
     }
 
-    function handleClick(num) {
-      if (num === current) {
-        if (num === 1) startTime = Date.now();
-        if (num === 9) {
-          endTime = Date.now();
-          showResult();
-        }
+    function handleAnswer(selected) {
+      const isCorrect = selected === quiz[current].answer;
+      document.getElementById("result").textContent = isCorrect ? "✅ Correct!" : `❌ Wrong. Correct answer: ${quiz[current].answer}`;
+      setTimeout(() => {
         current++;
-        renderGrid();
-      }
+        if (current < quiz.length) {
+          loadQuestion();
+        } else {
+          document.getElementById("question").textContent = "Quiz complete!";
+          document.getElementById("options").innerHTML = "";
+        }
+      }, 1500);
     }
 
-    function showResult() {
-      const time = (endTime - startTime) / 1000;
-      let message = "";
-      if (time < 3) message = "🔥 Fast fingers!";
-      else if (time < 6) message = "😅 Not bad!";
-      else message = "😴 Try again?";
-
-      result.innerHTML = `
-        <p>Time: ${time.toFixed(2)}s</p>
-        <p><strong>${message}</strong></p>
-        <button class="play-again" onclick="resetGame()">Play Again</button>
-      `;
-    }
-
-    resetGame();
+    loadQuestion();
   </script>
 </body>
 </html>
